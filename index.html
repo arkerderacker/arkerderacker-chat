@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase Chat App</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+    #message { width: 80%; }
+    button { padding: 5px 10px; }
+    #userInfo { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Simple Firebase Chat</h2>
+  <div id="userInfo"></div>
+  <div id="chat"></div>
+  <input id="message" placeholder="Type a message..." />
+  <button id="sendBtn">Send</button>
+
+  <script type="module">
+    // ----- 1️⃣ Import Firebase SDKs -----
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // ----- 2️⃣ Your Firebase Config -----
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4i1bs9ocomiyvV3RZSdQ8OcgtJwAqINo",
+      authDomain: "arkerderacker-chat.firebaseapp.com",
+      databaseURL: "https://arkerderacker-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "arkerderacker-chat",
+      storageBucket: "arkerderacker-chat.firebasestorage.app",
+      messagingSenderId: "664100165039",
+      appId: "1:664100165039:web:804c5ddf7b7af7dab18b5a",
+      measurementId: "G-3WWDCRL1TY"
+    };
+
+    // ----- 3️⃣ Initialize Firebase -----
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // ----- 4️⃣ Elements -----
+    const chatDiv = document.getElementById("chat");
+    const messageInput = document.getElementById("message");
+    const sendBtn = document.getElementById("sendBtn");
+    const userInfoDiv = document.getElementById("userInfo");
+
+    // ----- 5️⃣ Login System -----
+    const provider = new GoogleAuthProvider();
+
+    async function login() {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function logout() {
+      await signOut(auth);
+    }
+
+    // ----- 6️⃣ Listen for Auth State -----
+    let currentUser = null;
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      if(user) {
+        userInfoDiv.innerHTML = `Logged in as ${user.displayName} <button onclick="logout()">Logout</button>`;
+        loadChat(); // start listening to messages
+      } else {
+        userInfoDiv.innerHTML = `<button onclick="login()">Login with Google</button>`;
+      }
+    });
+
+    // ----- 7️⃣ Send Message -----
+    sendBtn.onclick = () => {
+      if(!currentUser) { alert("Login first!"); return; }
+      const text = messageInput.value.trim();
+      if(text === "") return;
+
+      const msgRef = ref(db, 'messages');
+      // Each message includes: text, sender name, timestamp, and a simple CID
+      push(msgRef, {
+        text: text,
+        sender: currentUser.displayName,
+        timestamp: Date.now(),
+        cid: crypto.randomUUID() // generate a unique client ID for this message
+      });
+
+      messageInput.value = "";
+    };
+
+    // ----- 8️⃣ Load Chat Messages -----
+    function loadChat() {
+      const msgRef = ref(db, 'messages');
+      onValue(msgRef, (snapshot) => {
+        chatDiv.innerHTML = "";
+        snapshot.forEach((child) => {
+          const msg = child.val();
+          const time = new Date(msg.timestamp).toLocaleTimeString();
+          chatDiv.innerHTML += `<p><strong>${msg.sender}</strong> [${time}]: ${msg.text}</p>`;
+        });
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+      });
+    }
+
+    // ----- 9️⃣ Explanation of CID -----
+    /*
+      CID = Client ID
+      - Here, we use crypto.randomUUID() to give each message a unique identifier
+      - Useful to prevent duplicates, track messages per user, or reference them later
+      - Each user/browser can have multiple messages, each with its own CID
+    */
+  </script>
+</body>
+</html>
