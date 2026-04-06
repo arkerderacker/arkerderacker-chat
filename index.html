@@ -22,9 +22,9 @@
     // ----- 1️⃣ Import Firebase SDKs -----
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ----- 2️⃣ Your Firebase Config -----
+    // ----- 2️⃣ Firebase Config -----
     const firebaseConfig = {
       apiKey: "AIzaSyD4i1bs9ocomiyvV3RZSdQ8OcgtJwAqINo",
       authDomain: "arkerderacker-chat.firebaseapp.com",
@@ -40,6 +40,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
     // ----- 4️⃣ Elements -----
     const chatDiv = document.getElementById("chat");
@@ -47,28 +48,23 @@
     const sendBtn = document.getElementById("sendBtn");
     const userInfoDiv = document.getElementById("userInfo");
 
-    // ----- 5️⃣ Login System -----
-    const provider = new GoogleAuthProvider();
+    // ----- 5️⃣ Login & Redirect Handling -----
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result.user) console.log("Logged in as:", result.user.displayName);
+      })
+      .catch(console.error);
 
-    async function login() {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (err) {
-        console.error(err);
-      }
-    }
+    function login() { signInWithRedirect(auth, provider); }
+    function logout() { signOut(auth); }
 
-    async function logout() {
-      await signOut(auth);
-    }
-
-    // ----- 6️⃣ Listen for Auth State -----
+    // ----- 6️⃣ Auth State Listener -----
     let currentUser = null;
     onAuthStateChanged(auth, (user) => {
       currentUser = user;
-      if(user) {
+      if(user){
         userInfoDiv.innerHTML = `Logged in as ${user.displayName} <button onclick="logout()">Logout</button>`;
-        loadChat(); // start listening to messages
+        loadChat();
       } else {
         userInfoDiv.innerHTML = `<button onclick="login()">Login with Google</button>`;
       }
@@ -81,12 +77,11 @@
       if(text === "") return;
 
       const msgRef = ref(db, 'messages');
-      // Each message includes: text, sender name, timestamp, and a simple CID
       push(msgRef, {
         text: text,
         sender: currentUser.displayName,
         timestamp: Date.now(),
-        cid: crypto.randomUUID() // generate a unique client ID for this message
+        cid: crypto.randomUUID()
       });
 
       messageInput.value = "";
@@ -105,14 +100,6 @@
         chatDiv.scrollTop = chatDiv.scrollHeight;
       });
     }
-
-    // ----- 9️⃣ Explanation of CID -----
-    /*
-      CID = Client ID
-      - Here, we use crypto.randomUUID() to give each message a unique identifier
-      - Useful to prevent duplicates, track messages per user, or reference them later
-      - Each user/browser can have multiple messages, each with its own CID
-    */
   </script>
 </body>
 </html>
