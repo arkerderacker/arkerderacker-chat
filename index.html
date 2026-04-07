@@ -1,225 +1,356 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Arkerderacker-chat</title>
-  <style>
-    body { font-family: Arial; margin: 20px; position: relative; }
-    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
-    input { padding: 5px; margin: 5px 0; }
-    button { padding: 5px 10px; margin-left: 5px; }
+<meta charset="UTF-8">
+<title>Arkerderacker Chat - Liquid Glass</title>
+<style>
+/* ---------- BODY & BACKGROUND ---------- */
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #1e1e2f, #3a3a5f);
+}
 
-    #onlineBox {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      width: 150px;
-      background: #f9f9f9;
-    }
-  </style>
+/* ---------- GLASS PANEL ---------- */
+.glass {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 25px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  padding: 30px;
+  min-width: 350px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+/* ---------- INPUTS ---------- */
+input {
+  width: 80%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  backdrop-filter: blur(5px);
+}
+
+/* ---------- BUTTONS ---------- */
+.glass-btn {
+  position: relative;
+  padding: 12px 30px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  outline: none;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.3);
+  overflow: hidden;
+  transition: all 0.25s ease;
+  margin: 0 5px;
+}
+
+/* Reflection overlay */
+.glass-btn::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(60deg, rgba(255,255,255,0.3), rgba(255,255,255,0));
+  transform: rotate(25deg);
+  pointer-events: none;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.glass-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.4);
+}
+
+.glass-btn:active {
+  transform: scale(0.92);
+}
+
+.water {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255,255,255,0.15);
+  border-radius: 40%;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  animation: ripple 1s ease-out forwards;
+}
+
+@keyframes ripple {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* ---------- LOGIN FORM ---------- */
+#loginForm {
+  transform: translateY(-30px);
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ---------- CHAT UI ---------- */
+#chatUI {
+  display: none;
+  flex-direction: column;
+  gap: 15px;
+  width: 90%;
+  max-width: 600px;
+}
+
+#onlineBox {
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 10px;
+  color: #fff;
+}
+
+#chat {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 10px;
+  height: 300px;
+  overflow-y: scroll;
+  color: #fff;
+}
+
+.chat-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+#message {
+  flex: 1;
+}
+</style>
 </head>
 <body>
-  <h2>arkerderacker-chat</h2>
 
-  <div id="loginForm">
-    <h3>Register / Login</h3>
-    <input id="usernameInput" placeholder="Username" />
-    <input id="passwordInput" type="password" placeholder="Password" />
-    <button id="registerBtn">Register</button>
-    <button id="loginBtn">Login</button>
-    <div id="loginMsg" style="color:red;"></div>
+<!-- LOGIN -->
+<div class="glass" id="loginForm">
+  <h2 style="margin:0;">Login / Register</h2>
+  <input id="usernameInput" placeholder="Username">
+  <input id="passwordInput" type="password" placeholder="Password">
+  <div class="button-row">
+    <button class="glass-btn" id="registerBtn">Register</button>
+    <button class="glass-btn" id="loginBtn">Login</button>
+  </div>
+  <div id="loginMsg"></div>
+</div>
+
+<!-- CHAT -->
+<div class="glass" id="chatUI">
+  <div id="onlineBox">
+    <strong>Online: <span id="onlineCount">0</span></strong>
+    <div id="onlineList"></div>
   </div>
 
-  <div id="chatUI" style="display:none;">
-    <div id="onlineBox">
-      <strong>Online: <span id="onlineCount">0</span></strong>
-      <div id="onlineList"></div>
-    </div>
-
-    <div id="userInfo"></div>
-    <div id="chat"></div>
-    <input id="message" placeholder="Type a message..." />
-    <button id="sendBtn">Send</button>
-    <button id="logoutBtn">Logout</button>
-    <button id="resetBtn">Reset Chat (Admin)</button>
+  <div id="userInfo"></div>
+  <div id="chat"></div>
+  <div class="chat-buttons">
+    <input id="message" placeholder="Type a message...">
+    <button class="glass-btn" id="sendBtn">Send</button>
+    <button class="glass-btn" id="logoutBtn">Logout</button>
+    <button class="glass-btn" id="resetBtn">Reset Chat</button>
   </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, get, set, remove, onDisconnect } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, get, set, remove, onDisconnect } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyD4i1bs9ocomiyvV3RZSdQ8OcgtJwAqINo",
-      authDomain: "arkerderacker-chat.firebaseapp.com",
-      databaseURL: "https://arkerderacker-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "arkerderacker-chat",
-      storageBucket: "arkerderacker-chat.firebasestorage.app",
-      messagingSenderId: "664100165039",
-      appId: "1:664100165039:web:804c5ddf7b7af7dab18b5a",
-      measurementId: "G-3WWDCRL1TY"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyD4i1bs9ocomiyvV3RZSdQ8OcgtJwAqINo",
+  authDomain: "arkerderacker-chat.firebaseapp.com",
+  databaseURL: "https://arkerderacker-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "arkerderacker-chat",
+  storageBucket: "arkerderacker-chat.firebasedestorage.app",
+  messagingSenderId: "664100165039",
+  appId: "1:664100165039:web:804c5ddf7b7af7dab18b5a",
+  measurementId: "G-3WWDCRL1TY"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-    // Elements
-    const usernameInput = document.getElementById("usernameInput");
-    const passwordInput = document.getElementById("passwordInput");
-    const registerBtn = document.getElementById("registerBtn");
-    const loginBtn = document.getElementById("loginBtn");
-    const loginMsg = document.getElementById("loginMsg");
+const usernameInput = document.getElementById("usernameInput");
+const passwordInput = document.getElementById("passwordInput");
+const registerBtn = document.getElementById("registerBtn");
+const loginBtn = document.getElementById("loginBtn");
+const loginMsg = document.getElementById("loginMsg");
 
-    const loginForm = document.getElementById("loginForm");
-    const chatUI = document.getElementById("chatUI");
-    const userInfo = document.getElementById("userInfo");
-    const chatDiv = document.getElementById("chat");
-    const messageInput = document.getElementById("message");
-    const sendBtn = document.getElementById("sendBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const resetBtn = document.getElementById("resetBtn");
+const loginForm = document.getElementById("loginForm");
+const chatUI = document.getElementById("chatUI");
+const userInfo = document.getElementById("userInfo");
+const chatDiv = document.getElementById("chat");
+const messageInput = document.getElementById("message");
+const sendBtn = document.getElementById("sendBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const resetBtn = document.getElementById("resetBtn");
+const onlineCount = document.getElementById("onlineCount");
+const onlineList = document.getElementById("onlineList");
 
-    let currentUser = null;
-    const SECRET_CODE = "qwertyuiop";
+let currentUser = null;
+const SECRET_CODE = "qwertyuiop";
 
-    // ----- Restore login -----
-    const savedUser = localStorage.getItem("currentUser");
-    if(savedUser){
-      currentUser = savedUser;
-      loginForm.style.display = "none";
-      chatUI.style.display = "block";
-      userInfo.textContent = `Logged in as: ${currentUser}`;
-      setOnline();
-      loadChat();
-      loadOnlineUsers();
-    }
+const savedUser = localStorage.getItem("currentUser");
+if(savedUser){
+  currentUser = savedUser;
+  loginForm.style.display = "none";
+  chatUI.style.display = "flex";
+  userInfo.textContent = `Logged in as: ${currentUser}`;
+  setOnline();
+  loadChat();
+  loadOnlineUsers();
+}
 
-    // ----- Register -----
-    registerBtn.onclick = async () => {
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value.trim();
-      if(!username || !password) return loginMsg.textContent = "Enter username and password!";
+/* ----------------- BUTTON RIPPLE EFFECT ----------------- */
+function addRipple(btn){
+  btn.addEventListener("click", function(e){
+      const ripple = document.createElement("span");
+      ripple.classList.add("water");
+      btn.appendChild(ripple);
+      ripple.addEventListener("animationend", () => ripple.remove());
+  });
+}
+document.querySelectorAll(".glass-btn").forEach(addRipple);
 
-      const userRef = ref(db, 'users/' + username);
-      const snapshot = await get(userRef);
-      if(snapshot.exists()){
-        loginMsg.textContent = "Username already taken!";
-        return;
-      }
+/* ----------------- REGISTER ----------------- */
+registerBtn.onclick = async () => {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value.trim();
+  if(!username || !password) return loginMsg.textContent = "Enter username and password!";
+  const userRef = ref(db, 'users/' + username);
+  const snapshot = await get(userRef);
+  if(snapshot.exists()){
+    loginMsg.textContent = "Username already taken!";
+    return;
+  }
+  await set(userRef, { password });
+  loginMsg.style.color = "green";
+  loginMsg.textContent = "Registered successfully!";
+};
 
-      await set(userRef, { password: password });
-      loginMsg.style.color = "green";
-      loginMsg.textContent = "Registered successfully!";
-    };
+/* ----------------- LOGIN ----------------- */
+loginBtn.onclick = async () => {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value.trim();
+  if(!username || !password) return loginMsg.textContent = "Enter username and password!";
+  const userRef = ref(db, 'users/' + username);
+  const snapshot = await get(userRef);
+  if(!snapshot.exists()){
+    loginMsg.textContent = "Username does not exist!";
+    return;
+  }
+  if(password !== snapshot.val().password){
+    loginMsg.textContent = "Incorrect password!";
+    return;
+  }
+  currentUser = username;
+  localStorage.setItem("currentUser", currentUser);
+  loginForm.style.display = "none";
+  chatUI.style.display = "flex";
+  userInfo.textContent = `Logged in as: ${currentUser}`;
+  setOnline();
+  loadChat();
+  loadOnlineUsers();
+};
 
-    // ----- Login -----
-    loginBtn.onclick = async () => {
-      const username = usernameInput.value.trim();
-      const password = passwordInput.value.trim();
-      if(!username || !password) return loginMsg.textContent = "Enter username and password!";
+/* ----------------- ONLINE STATUS ----------------- */
+function setOnline(){
+  const onlineRef = ref(db, 'onlineUsers/' + currentUser);
+  set(onlineRef, true);
+  onDisconnect(onlineRef).remove();
+}
 
-      const userRef = ref(db, 'users/' + username);
-      const snapshot = await get(userRef);
-      if(!snapshot.exists()){
-        loginMsg.textContent = "Username does not exist!";
-        return;
-      }
+function loadOnlineUsers(){
+  onValue(ref(db, 'onlineUsers'), snapshot => {
+    onlineList.innerHTML = "";
+    let total = 0;
+    snapshot.forEach(child => {
+      total++;
+      onlineList.innerHTML += `<p>🟢 ${child.key}</p>`;
+    });
+    onlineCount.textContent = total;
+  });
+}
 
-      if(password !== snapshot.val().password){
-        loginMsg.textContent = "Incorrect password!";
-        return;
-      }
+/* ----------------- LOGOUT ----------------- */
+logoutBtn.onclick = () => {
+  if(currentUser) remove(ref(db, 'onlineUsers/' + currentUser));
+  currentUser = null;
+  localStorage.removeItem("currentUser");
+  loginForm.style.display = "flex";
+  chatUI.style.display = "none";
+};
 
-      currentUser = username;
-      localStorage.setItem("currentUser", currentUser);
-      loginForm.style.display = "none";
-      chatUI.style.display = "block";
-      userInfo.textContent = `Logged in as: ${currentUser}`;
+/* ----------------- CHAT ----------------- */
+sendBtn.onclick = () => {
+  if(!currentUser) return;
+  const text = messageInput.value.trim();
+  if(!text) return;
+  push(ref(db, 'messages'), { text, sender: currentUser, timestamp: Date.now(), cid: crypto.randomUUID() });
+  messageInput.value = "";
+};
 
-      setOnline();
-      loadChat();
-      loadOnlineUsers();
-    };
+function loadChat(){
+  onValue(ref(db, 'messages'), snapshot => {
+    chatDiv.innerHTML = "";
+    snapshot.forEach(child => {
+      const msg = child.val();
+      const time = new Date(msg.timestamp).toLocaleTimeString();
+      chatDiv.innerHTML += `<p><strong>${msg.sender}</strong> [${time}]: ${msg.text}</p>`;
+    });
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  });
+}
 
-    // ----- Set Online -----
-    function setOnline(){
-      const onlineRef = ref(db, 'onlineUsers/' + currentUser);
-      set(onlineRef, true);
-      onDisconnect(onlineRef).remove();
-    }
-
-    // ----- Logout -----
-    logoutBtn.onclick = () => {
-      if(currentUser){
-        remove(ref(db, 'onlineUsers/' + currentUser));
-      }
-
-      currentUser = null;
-      localStorage.removeItem("currentUser");
-      loginForm.style.display = "block";
-      chatUI.style.display = "none";
-    };
-
-    // ----- Send Message -----
-    sendBtn.onclick = () => {
-      if(!currentUser) return;
-      const text = messageInput.value.trim();
-      if(!text) return;
-
-      push(ref(db, 'messages'), {
-        text,
-        sender: currentUser,
-        timestamp: Date.now(),
-        cid: crypto.randomUUID()
-      });
-
-      messageInput.value = "";
-    };
-
-    // ----- Load Chat -----
-    function loadChat(){
-      onValue(ref(db, 'messages'), snapshot => {
-        chatDiv.innerHTML = "";
-        snapshot.forEach(child => {
-          const msg = child.val();
-          const time = new Date(msg.timestamp).toLocaleTimeString();
-          chatDiv.innerHTML += `<p><strong>${msg.sender}</strong> [${time}]: ${msg.text}</p>`;
-        });
-        chatDiv.scrollTop = chatDiv.scrollHeight;
-      });
-    }
-
-    // ----- Load Online Users -----
-    function loadOnlineUsers(){
-      onValue(ref(db, 'onlineUsers'), snapshot => {
-        const list = document.getElementById("onlineList");
-        const count = document.getElementById("onlineCount");
-
-        list.innerHTML = "";
-        let total = 0;
-
-        snapshot.forEach(child => {
-          total++;
-          list.innerHTML += `<p>🟢 ${child.key}</p>`;
-        });
-
-        count.textContent = total;
-      });
-    }
-
-    // ----- Reset Chat -----
-    resetBtn.onclick = () => {
-      const code = prompt("Enter admin code to reset chat:");
-      if(code === SECRET_CODE){
-        if(confirm("Are you sure?")){
-          remove(ref(db, 'messages'));
-        }
-      } else {
-        alert("Wrong code!");
-      }
-    };
-  </script>
+/* ----------------- RESET CHAT ----------------- */
+resetBtn.onclick = () => {
+  const code = prompt("Enter admin code to reset chat:");
+  if(code === SECRET_CODE){
+    if(confirm("Are you sure?")) remove(ref(db, 'messages'));
+  } else {
+    alert("Wrong code!");
+  }
+};
+</script>
 </body>
 </html>
