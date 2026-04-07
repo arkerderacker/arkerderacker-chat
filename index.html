@@ -2,21 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Arkerderacker Chat - Liquid Glass</title>
+<title>Arkerderacker Chat - Advanced Glass</title>
 <style>
 /* ---------- BODY & BACKGROUND ---------- */
 body {
   margin: 0;
   height: 100vh;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #1e1e2f, #3a3a5f);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #1e1e2f, #3a3a5f);
+  position: relative;
+}
+
+/* ---------- PARTICLES CANVAS ---------- */
+#particles {
+  position: absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  z-index: 0;
 }
 
 /* ---------- GLASS PANEL ---------- */
 .glass {
+  position: relative;
+  z-index: 1;
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
@@ -66,7 +78,6 @@ input {
   margin: 0 5px;
 }
 
-/* Reflection overlay */
 .glass-btn::before {
   content: "";
   position: absolute;
@@ -81,14 +92,8 @@ input {
   transition: all 0.3s ease;
 }
 
-.glass-btn:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.4);
-}
-
-.glass-btn:active {
-  transform: scale(0.92);
-}
+.glass-btn:hover { transform: translateY(-3px) scale(1.05); }
+.glass-btn:active { transform: scale(0.92); }
 
 .water {
   position: absolute;
@@ -102,24 +107,15 @@ input {
   pointer-events: none;
   animation: ripple 1s ease-out forwards;
 }
-
 @keyframes ripple {
-  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.6; }
-  50% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
-  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+  0% { transform: translate(-50%, -50%) scale(0); opacity:0.6; }
+  50% { transform: translate(-50%, -50%) scale(1); opacity:0.4; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity:0; }
 }
 
-/* ---------- LOGIN FORM ---------- */
-#loginForm {
-  transform: translateY(-30px);
-}
-
-.button-row {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  width: 100%;
-}
+/* ---------- LOGIN ---------- */
+#loginForm { transform: translateY(-30px); }
+.button-row { display: flex; gap: 10px; justify-content: center; width: 100%; }
 
 /* ---------- CHAT UI ---------- */
 #chatUI {
@@ -129,42 +125,37 @@ input {
   width: 90%;
   max-width: 600px;
 }
+#onlineBox { background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border-radius: 15px; padding: 10px; color: #fff; }
+#chat { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); border-radius: 15px; padding: 10px; height: 300px; overflow-y: scroll; color: #fff; }
+.chat-buttons { display:flex; gap:10px; margin-top:5px; flex-wrap: wrap; }
+#message { flex:1; }
 
-#onlineBox {
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(15px);
-  border-radius: 15px;
-  padding: 10px;
-  color: #fff;
+/* ---------- SETTINGS MODAL ---------- */
+#settingsModal {
+  position: absolute;
+  top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  display:none;
+  flex-direction: column;
+  align-items: center;
+  padding:20px;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(25px);
+  border-radius: 25px;
+  z-index: 10;
+  min-width:300px;
 }
-
-#chat {
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(15px);
-  border-radius: 15px;
-  padding: 10px;
-  height: 300px;
-  overflow-y: scroll;
-  color: #fff;
-}
-
-.chat-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 5px;
-  flex-wrap: wrap;
-}
-
-#message {
-  flex: 1;
-}
+#settingsModal input[type=range]{ width:80%; }
+#settingsModal button{ margin-top:10px; }
+#settingsModal .edit-about { display:none; }
 </style>
 </head>
 <body>
+<canvas id="particles"></canvas>
 
 <!-- LOGIN -->
 <div class="glass" id="loginForm">
-  <h2 style="margin:0;">Login / Register</h2>
+  <h2>Login / Register</h2>
   <input id="usernameInput" placeholder="Username">
   <input id="passwordInput" type="password" placeholder="Password">
   <div class="button-row">
@@ -176,11 +167,11 @@ input {
 
 <!-- CHAT -->
 <div class="glass" id="chatUI">
-  <div id="onlineBox">
-    <strong>Online: <span id="onlineCount">0</span></strong>
-    <div id="onlineList"></div>
+  <div class="button-row">
+    <button class="glass-btn" id="settingsBtn">Settings ⚙️</button>
+    <button class="glass-btn" id="aboutBtn">About ℹ️</button>
   </div>
-
+  <div id="onlineBox"><strong>Online: <span id="onlineCount">0</span></strong><div id="onlineList"></div></div>
   <div id="userInfo"></div>
   <div id="chat"></div>
   <div class="chat-buttons">
@@ -191,166 +182,141 @@ input {
   </div>
 </div>
 
+<!-- SETTINGS MODAL -->
+<div class="glass" id="settingsModal">
+  <h3>Settings</h3>
+  <label>Particle Speed:</label>
+  <input type="range" id="speedSlider" min="0.1" max="5" step="0.1" value="1">
+  <button class="glass-btn" id="toggleParticlesBtn">Toggle Particles</button>
+  <button class="glass-btn" id="closeSettingsBtn">Close</button>
+  <button class="glass-btn edit-about" id="editAboutBtn">Edit About</button>
+</div>
+
 <script type="module">
+// ---------------- FIREBASE INIT ----------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push, onValue, get, set, remove, onDisconnect } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD4i1bs9ocomiyvV3RZSdQ8OcgtJwAqINo",
-  authDomain: "arkerderacker-chat.firebaseapp.com",
-  databaseURL: "https://arkerderacker-chat-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "arkerderacker-chat",
-  storageBucket: "arkerderacker-chat.firebasedestorage.app",
-  messagingSenderId: "664100165039",
-  appId: "1:664100165039:web:804c5ddf7b7af7dab18b5a",
-  measurementId: "G-3WWDCRL1TY"
-};
-
+const firebaseConfig = { apiKey: "AIzaSyD4i1bs9ocomiyvV3RZSdQ8OcgtJwAqINo", authDomain:"arkerderacker-chat.firebaseapp.com", databaseURL:"https://arkerderacker-chat-default-rtdb.asia-southeast1.firebasedatabase.app", projectId:"arkerderacker-chat", storageBucket:"arkerderacker-chat.firebasedestorage.app", messagingSenderId:"664100165039", appId:"1:664100165039:web:804c5ddf7b7af7dab18b5a", measurementId:"G-3WWDCRL1TY" };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const usernameInput = document.getElementById("usernameInput");
-const passwordInput = document.getElementById("passwordInput");
-const registerBtn = document.getElementById("registerBtn");
-const loginBtn = document.getElementById("loginBtn");
-const loginMsg = document.getElementById("loginMsg");
+// ---------------- ELEMENTS ----------------
+const usernameInput=document.getElementById("usernameInput");
+const passwordInput=document.getElementById("passwordInput");
+const registerBtn=document.getElementById("registerBtn");
+const loginBtn=document.getElementById("loginBtn");
+const loginMsg=document.getElementById("loginMsg");
+const loginForm=document.getElementById("loginForm");
+const chatUI=document.getElementById("chatUI");
+const userInfo=document.getElementById("userInfo");
+const chatDiv=document.getElementById("chat");
+const messageInput=document.getElementById("message");
+const sendBtn=document.getElementById("sendBtn");
+const logoutBtn=document.getElementById("logoutBtn");
+const resetBtn=document.getElementById("resetBtn");
+const onlineCount=document.getElementById("onlineCount");
+const onlineList=document.getElementById("onlineList");
+const settingsBtn=document.getElementById("settingsBtn");
+const settingsModal=document.getElementById("settingsModal");
+const closeSettingsBtn=document.getElementById("closeSettingsBtn");
+const speedSlider=document.getElementById("speedSlider");
+const toggleParticlesBtn=document.getElementById("toggleParticlesBtn");
+const aboutBtn=document.getElementById("aboutBtn");
+const editAboutBtn=document.getElementById("editAboutBtn");
 
-const loginForm = document.getElementById("loginForm");
-const chatUI = document.getElementById("chatUI");
-const userInfo = document.getElementById("userInfo");
-const chatDiv = document.getElementById("chat");
-const messageInput = document.getElementById("message");
-const sendBtn = document.getElementById("sendBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const resetBtn = document.getElementById("resetBtn");
-const onlineCount = document.getElementById("onlineCount");
-const onlineList = document.getElementById("onlineList");
+let currentUser=null;
+const SECRET_CODE="qwertyuiop";
+let particlesEnabled=true;
+let particleSpeed=1;
 
-let currentUser = null;
-const SECRET_CODE = "qwertyuiop";
-
-const savedUser = localStorage.getItem("currentUser");
+// ---------------- REMEMBER USER ----------------
+const savedUser=localStorage.getItem("currentUser");
 if(savedUser){
-  currentUser = savedUser;
-  loginForm.style.display = "none";
-  chatUI.style.display = "flex";
-  userInfo.textContent = `Logged in as: ${currentUser}`;
+  currentUser=savedUser;
+  loginForm.style.display="none";
+  chatUI.style.display="flex";
+  userInfo.textContent=`Logged in as: ${currentUser}`;
   setOnline();
   loadChat();
   loadOnlineUsers();
+  if(currentUser==="Markus") editAboutBtn.style.display="block";
 }
 
-/* ----------------- BUTTON RIPPLE EFFECT ----------------- */
-function addRipple(btn){
-  btn.addEventListener("click", function(e){
-      const ripple = document.createElement("span");
-      ripple.classList.add("water");
-      btn.appendChild(ripple);
-      ripple.addEventListener("animationend", () => ripple.remove());
-  });
-}
+// ---------------- BUTTON RIPPLE EFFECT ----------------
+function addRipple(btn){ btn.addEventListener("click",()=>{ const ripple=document.createElement("span"); ripple.classList.add("water"); btn.appendChild(ripple); ripple.addEventListener("animationend",()=>ripple.remove()); }); }
 document.querySelectorAll(".glass-btn").forEach(addRipple);
 
-/* ----------------- REGISTER ----------------- */
-registerBtn.onclick = async () => {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value.trim();
-  if(!username || !password) return loginMsg.textContent = "Enter username and password!";
-  const userRef = ref(db, 'users/' + username);
-  const snapshot = await get(userRef);
-  if(snapshot.exists()){
-    loginMsg.textContent = "Username already taken!";
-    return;
-  }
-  await set(userRef, { password });
-  loginMsg.style.color = "green";
-  loginMsg.textContent = "Registered successfully!";
+// ---------------- REGISTER ----------------
+registerBtn.onclick=async()=>{
+  const username=usernameInput.value.trim();
+  const password=passwordInput.value.trim();
+  if(!username||!password) return loginMsg.textContent="Enter username and password!";
+  const userRef=ref(db,'users/'+username);
+  const snapshot=await get(userRef);
+  if(snapshot.exists()){ loginMsg.textContent="Username already taken!"; return; }
+  await set(userRef,{password});
+  loginMsg.style.color="green";
+  loginMsg.textContent="Registered successfully!";
 };
 
-/* ----------------- LOGIN ----------------- */
-loginBtn.onclick = async () => {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value.trim();
-  if(!username || !password) return loginMsg.textContent = "Enter username and password!";
-  const userRef = ref(db, 'users/' + username);
-  const snapshot = await get(userRef);
-  if(!snapshot.exists()){
-    loginMsg.textContent = "Username does not exist!";
-    return;
-  }
-  if(password !== snapshot.val().password){
-    loginMsg.textContent = "Incorrect password!";
-    return;
-  }
-  currentUser = username;
-  localStorage.setItem("currentUser", currentUser);
-  loginForm.style.display = "none";
-  chatUI.style.display = "flex";
-  userInfo.textContent = `Logged in as: ${currentUser}`;
+// ---------------- LOGIN ----------------
+loginBtn.onclick=async()=>{
+  const username=usernameInput.value.trim();
+  const password=passwordInput.value.trim();
+  if(!username||!password) return loginMsg.textContent="Enter username and password!";
+  const userRef=ref(db,'users/'+username);
+  const snapshot=await get(userRef);
+  if(!snapshot.exists()){ loginMsg.textContent="Username does not exist!"; return; }
+  if(password!==snapshot.val().password){ loginMsg.textContent="Incorrect password!"; return; }
+  currentUser=username;
+  localStorage.setItem("currentUser",currentUser);
+  loginForm.style.display="none";
+  chatUI.style.display="flex";
+  userInfo.textContent=`Logged in as: ${currentUser}`;
   setOnline();
   loadChat();
   loadOnlineUsers();
+  if(currentUser==="Markus") editAboutBtn.style.display="block";
 };
 
-/* ----------------- ONLINE STATUS ----------------- */
-function setOnline(){
-  const onlineRef = ref(db, 'onlineUsers/' + currentUser);
-  set(onlineRef, true);
-  onDisconnect(onlineRef).remove();
-}
+// ---------------- ONLINE USERS ----------------
+function setOnline(){ const onlineRef=ref(db,'onlineUsers/'+currentUser); set(onlineRef,true); onDisconnect(onlineRef).remove(); }
+function loadOnlineUsers(){ onValue(ref(db,'onlineUsers'),snapshot=>{ onlineList.innerHTML=""; let total=0; snapshot.forEach(child=>{ total++; onlineList.innerHTML+=`<p>🟢 ${child.key}</p>`; }); onlineCount.textContent=total; }); }
 
-function loadOnlineUsers(){
-  onValue(ref(db, 'onlineUsers'), snapshot => {
-    onlineList.innerHTML = "";
-    let total = 0;
-    snapshot.forEach(child => {
-      total++;
-      onlineList.innerHTML += `<p>🟢 ${child.key}</p>`;
-    });
-    onlineCount.textContent = total;
-  });
-}
+// ---------------- LOGOUT ----------------
+logoutBtn.onclick=()=>{ if(currentUser) remove(ref(db,'onlineUsers/'+currentUser)); currentUser=null; localStorage.removeItem("currentUser"); loginForm.style.display="flex"; chatUI.style.display="none"; };
 
-/* ----------------- LOGOUT ----------------- */
-logoutBtn.onclick = () => {
-  if(currentUser) remove(ref(db, 'onlineUsers/' + currentUser));
-  currentUser = null;
-  localStorage.removeItem("currentUser");
-  loginForm.style.display = "flex";
-  chatUI.style.display = "none";
-};
+// ---------------- CHAT ----------------
+sendBtn.onclick=()=>{ if(!currentUser) return; const text=messageInput.value.trim(); if(!text) return; push(ref(db,'messages'),{text,sender:currentUser,timestamp:Date.now(),cid:crypto.randomUUID()}); messageInput.value=""; }
+function loadChat(){ onValue(ref(db,'messages'),snapshot=>{ chatDiv.innerHTML=""; snapshot.forEach(child=>{ const msg=child.val(); const time=new Date(msg.timestamp).toLocaleTimeString(); chatDiv.innerHTML+=`<p><strong>${msg.sender}</strong> [${time}]: ${msg.text}</p>`; }); chatDiv.scrollTop=chatDiv.scrollHeight; }); }
 
-/* ----------------- CHAT ----------------- */
-sendBtn.onclick = () => {
-  if(!currentUser) return;
-  const text = messageInput.value.trim();
-  if(!text) return;
-  push(ref(db, 'messages'), { text, sender: currentUser, timestamp: Date.now(), cid: crypto.randomUUID() });
-  messageInput.value = "";
-};
+// ---------------- RESET ----------------
+resetBtn.onclick=()=>{ const code=prompt("Enter admin code to reset chat:"); if(code===SECRET_CODE){ if(confirm("Are you sure?")) remove(ref(db,'messages')); } else alert("Wrong code!"); };
 
-function loadChat(){
-  onValue(ref(db, 'messages'), snapshot => {
-    chatDiv.innerHTML = "";
-    snapshot.forEach(child => {
-      const msg = child.val();
-      const time = new Date(msg.timestamp).toLocaleTimeString();
-      chatDiv.innerHTML += `<p><strong>${msg.sender}</strong> [${time}]: ${msg.text}</p>`;
-    });
-    chatDiv.scrollTop = chatDiv.scrollHeight;
-  });
-}
+// ---------------- SETTINGS ----------------
+settingsBtn.onclick=()=>settingsModal.style.display="flex";
+closeSettingsBtn.onclick=()=>settingsModal.style.display="none";
+speedSlider.oninput=()=>particleSpeed=parseFloat(speedSlider.value);
+toggleParticlesBtn.onclick=()=>particlesEnabled=!particlesEnabled;
 
-/* ----------------- RESET CHAT ----------------- */
-resetBtn.onclick = () => {
-  const code = prompt("Enter admin code to reset chat:");
-  if(code === SECRET_CODE){
-    if(confirm("Are you sure?")) remove(ref(db, 'messages'));
-  } else {
-    alert("Wrong code!");
-  }
-};
+// ---------------- ABOUT BUTTON ----------------
+aboutBtn.onclick=()=>{ alert("Arkerderacker Chat\nVersion 1.0\n© 2026"); }
+editAboutBtn.onclick=()=>{ const text=prompt("Edit About:"); if(text) alert(`New About: ${text}`); }
+
+// ---------------- PARTICLES ----------------
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+let particles=[];
+function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+window.addEventListener("resize",resizeCanvas); resizeCanvas();
+
+function createParticles(){ particles=[]; for(let i=0;i<100;i++){ particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:Math.random()*3+1, speed:Math.random()*0.2+0.1}); } }
+createParticles();
+
+function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); if(particlesEnabled){ particles.forEach(p=>{ p.y-=p.speed*particleSpeed; if(p.y<0) p.y=canvas.height; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.fill(); }); } requestAnimationFrame(animate); }
+animate();
 </script>
 </body>
 </html>
