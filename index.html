@@ -5,117 +5,135 @@
 <title>Arkerderacker Chat</title>
 <style>
 body {
-  margin: 0;
-  height: 100vh;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #1e1e2f, #3a3a5f);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
+  margin:0;
+  height:100vh;
+  overflow:hidden;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#1e1e2f,#3a3a5f);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  position:relative;
 }
-#particles {
-  position: absolute;
+#particles{
+  position:absolute;
   top:0; left:0;
   width:100%; height:100%;
   z-index:0;
 }
-.glass {
-  position: relative;
-  z-index: 1;
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-radius: 25px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-  padding: 30px;
-  min-width: 350px;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
+.glass{
+  position:relative;
+  z-index:1;
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(15px);
+  -webkit-backdrop-filter:blur(15px);
+  border-radius:25px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.25);
+  padding:30px;
+  min-width:350px;
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:15px;
 }
-input {
-  width: 80%;
-  padding: 12px 40px 12px 12px;
-  border-radius: 12px;
-  border: none;
-  outline: none;
-  background: rgba(255,255,255,0.2);
-  color: #fff;
-  font-size: 16px;
-  text-align: left;
-  backdrop-filter: blur(5px);
-  transition: all 0.3s ease;
+input{
+  width:80%;
+  padding:12px 12px 12px 50px;
+  border-radius:12px;
+  border:none;
+  outline:none;
+  background:rgba(255,255,255,0.2);
+  color:#fff;
+  font-size:16px;
+  text-align:left;
+  backdrop-filter:blur(5px);
+  transition:all 0.3s ease;
 }
-input:focus { width: 100%; }
-.button-row { display:flex; gap:10px; justify-content:center; width:100%; }
-.glass-btn {
-  position: relative;
-  padding: 12px 30px;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  outline: none;
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.3);
-  overflow: hidden;
-  transition: all 0.25s ease;
-  margin: 0 5px;
+input:focus{width:100%;}
+.button-row{display:flex;gap:10px;justify-content:center;width:100%;}
+.glass-btn{
+  position:relative;
+  padding:12px 30px;
+  font-size:16px;
+  font-weight:bold;
+  color:white;
+  border:none;
+  border-radius:25px;
+  cursor:pointer;
+  outline:none;
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.2);
+  box-shadow:0 10px 30px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.3);
+  overflow:hidden;
+  transition:all 0.25s ease;
+  margin:0 5px;
 }
-.glass-btn::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(60deg, rgba(255,255,255,0.3), rgba(255,255,255,0));
-  transform: rotate(25deg);
-  pointer-events: none;
-  opacity: 0.6;
-  transition: all 0.3s ease;
+.glass-btn::before{
+  content:"";
+  position:absolute;
+  top:-50%;
+  left:-50%;
+  width:200%;
+  height:200%;
+  background:linear-gradient(60deg, rgba(255,255,255,0.3), rgba(255,255,255,0));
+  transform:rotate(25deg);
+  pointer-events:none;
+  opacity:0.6;
+  transition:all 0.3s ease;
 }
-.glass-btn:hover { transform: translateY(-3px) scale(1.05); }
-.glass-btn:active { transform: scale(0.92); }
-.water {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200%;
-  height: 200%;
-  background: rgba(255,255,255,0.15);
-  border-radius: 40%;
-  transform: translate(-50%, -50%) scale(0);
-  pointer-events: none;
-  animation: ripple 1s ease-out forwards;
+.glass-btn:hover{transform:translateY(-3px) scale(1.05);}
+.glass-btn:active{transform:scale(0.92);}
+.water{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:200%;
+  height:200%;
+  background:rgba(255,255,255,0.15);
+  border-radius:40%;
+  transform:translate(-50%,-50%) scale(0);
+  pointer-events:none;
+  animation:ripple 1s ease-out forwards;
 }
-@keyframes ripple {
-  0% { transform: translate(-50%, -50%) scale(0); opacity:0.6; }
-  50% { transform: translate(-50%, -50%) scale(1); opacity:0.4; }
-  100% { transform: translate(-50%, -50%) scale(1.5); opacity:0; }
+@keyframes ripple{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:0.6;}
+  50%{transform:translate(-50%,-50%) scale(1);opacity:0.4;}
+  100%{transform:translate(-50%,-50%) scale(1.5);opacity:0;}
 }
-#loginForm { transform: translateY(-30px); }
-#chatUI { display: none; flex-direction: column; gap: 15px; width: 90%; max-width: 600px; }
-#onlineBox { background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border-radius: 15px; padding: 10px; color: #fff; }
-#chat { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); border-radius: 15px; padding: 10px; height: 300px; overflow-y: scroll; color: #fff; }
-#message-container { position: relative; width:100%; display:flex; align-items:center; gap:10px; }
-#message { flex:1; padding:12px 12px 12px 40px; border-radius:12px; border:none; outline:none; background: rgba(255,255,255,0.2); color:#fff; font-size:16px; backdrop-filter: blur(5px); transition: all 0.3s ease; }
-#cameraBtn { position:absolute; left:10px; top:50%; transform: translateY(-50%); background:none; border:none; color:#fff; font-size:20px; cursor:pointer; z-index:2; }
-#settingsModal { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:none; flex-direction:column; align-items:center; padding:20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(25px); border-radius:25px; z-index:10; min-width:300px; }
-#settingsModal input[type=range]{ width:80%; }
-#settingsModal button{ margin-top:10px; }
-#settingsModal .edit-about{ display:none; }
-#aboutText{ white-space: pre-line; text-align:center; margin-top:10px; }
-img.chat-image{ max-width:100%; border-radius:15px; margin:5px 0; }
+#loginForm{transform:translateY(-30px);}
+#chatUI{display:none;flex-direction:column;gap:15px;width:90%;max-width:600px;}
+#onlineBox{background:rgba(255,255,255,0.15);backdrop-filter:blur(15px);border-radius:15px;padding:10px;color:#fff;}
+#chat{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border-radius:15px;padding:10px;height:300px;overflow-y:scroll;color:#fff;}
+#message-container{position:relative;width:100%;display:flex;align-items:center;gap:10px;}
+#message{flex:1;padding:12px 12px 12px 60px;border-radius:12px;border:none;outline:none;background:rgba(255,255,255,0.2);color:#fff;font-size:16px;backdrop-filter:blur(5px);transition:all 0.3s ease;}
+#cameraBtn{
+  position:absolute;
+  left:10px;
+  top:50%;
+  transform:translateY(-50%);
+  background:rgba(255,255,255,0.15);
+  border:none;
+  color:#fff;
+  font-size:20px;
+  cursor:pointer;
+  z-index:2;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  backdrop-filter:blur(10px);
+}
+#settingsModal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:none;flex-direction:column;align-items:center;padding:20px;background:rgba(255,255,255,0.2);backdrop-filter:blur(25px);border-radius:25px;z-index:10;min-width:300px;}
+#settingsModal input[type=range]{width:80%;}
+#settingsModal button{margin-top:10px;}
+#settingsModal .edit-about{display:none;}
+#aboutText{white-space:pre-line;text-align:center;margin-top:10px;}
+img.chat-image{max-width:100%;border-radius:15px;margin:5px 0;}
 </style>
 </head>
 <body>
@@ -165,10 +183,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getDatabase, ref, push, onValue, get, set, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getStorage, ref as sref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-const firebaseConfig = { apiKey:"AIzaSyD4i1bs9ocomiyvV3RZSdQ8OcgtJwAqINo", authDomain:"arkerderacker-chat.firebaseapp.com", databaseURL:"https://arkerderacker-chat-default-rtdb.asia-southeast1.firebasedatabase.app", projectId:"arkerderacker-chat", storageBucket:"arkerderacker-chat.appspot.com", messagingSenderId:"664100165039", appId:"1:664100165039:web:804c5ddf7b7af7dab18b5a", measurementId:"G-3WWDCRL1TY" };
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const storage = getStorage(app);
+const firebaseConfig={apiKey:"AIzaSyD4i1bs9ocomiyvV3RZSdQ8OcgtJwAqINo",authDomain:"arkerderacker-chat.firebaseapp.com",databaseURL:"https://arkerderacker-chat-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"arkerderacker-chat",storageBucket:"arkerderacker-chat.appspot.com",messagingSenderId:"664100165039",appId:"1:664100165039:web:804c5ddf7b7af7dab18b5a",measurementId:"G-3WWDCRL1TY"};
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const storage=getStorage(app);
 
 const usernameInput=document.getElementById("usernameInput");
 const passwordInput=document.getElementById("passwordInput");
@@ -207,6 +225,7 @@ if(savedUser){ currentUser=savedUser; loginForm.style.display="none"; chatUI.sty
 document.querySelectorAll(".glass-btn").forEach(btn=>btn.addEventListener("click",()=>{ const ripple=document.createElement("span"); ripple.classList.add("water"); btn.appendChild(ripple); ripple.addEventListener("animationend",()=>ripple.remove()); }));
 
 registerBtn.onclick=async()=>{ const username=usernameInput.value.trim(); const password=passwordInput.value.trim(); if(!username||!password){ loginMsg.textContent="Enter username and password!"; return; } const userRef=ref(db,'users/'+username); const snapshot=await get(userRef); if(snapshot.exists()){ loginMsg.textContent="Username already taken!"; return; } await set(userRef,{password}); loginMsg.style.color="green"; loginMsg.textContent="Registered!"; };
+
 loginBtn.onclick=async()=>{ const username=usernameInput.value.trim(); const password=passwordInput.value.trim(); if(!username||!password){ loginMsg.textContent="Enter username and password!"; return; } const userRef=ref(db,'users/'+username); const snapshot=await get(userRef); if(!snapshot.exists()){ loginMsg.textContent="Username does not exist!"; return; } if(password!==snapshot.val().password){ loginMsg.textContent="Incorrect password!"; return; } currentUser=username; localStorage.setItem("currentUser",currentUser); loginForm.style.display="none"; chatUI.style.display="flex"; userInfo.textContent=`Logged in as: ${currentUser}`; setOnline(); loadChat(); loadOnlineUsers(); if(currentUser==="Markus") editAboutBtn.style.display="block"; };
 
 function setOnline(){ const onlineRef=ref(db,'onlineUsers/'+currentUser); set(onlineRef,true); onDisconnect(onlineRef).remove(); }
@@ -214,8 +233,10 @@ function loadOnlineUsers(){ onValue(ref(db,'onlineUsers'),snapshot=>{ onlineList
 
 logoutBtn.onclick=()=>{ if(currentUser) remove(ref(db,'onlineUsers/'+currentUser)); currentUser=null; localStorage.removeItem("currentUser"); loginForm.style.display="flex"; chatUI.style.display="none"; };
 
+function sendMessage(text,imgUrl){ if(!currentUser || (!text && !imgUrl)) return; push(ref(db,'messages'),{sender:currentUser,timestamp:Date.now(),cid:crypto.randomUUID(),text:text||'',imgUrl:imgUrl||''}); }
+
 sendBtn.onclick=()=>{ sendMessage(messageInput.value.trim()); messageInput.value=""; };
-function sendMessage(text,imgUrl){ if(!currentUser||(!text&&!imgUrl)) return; push(ref(db,'messages'),{sender:currentUser,timestamp:Date.now(),cid:crypto.randomUUID(),text,text,imgUrl,imgUrl}); }
+
 function loadChat(){ onValue(ref(db,'messages'),snapshot=>{ chatDiv.innerHTML=""; snapshot.forEach(child=>{ const msg=child.val(); const time=new Date(msg.timestamp).toLocaleTimeString(); let html=`<p><strong>${msg.sender}</strong> [${time}]: `; if(msg.text) html+=msg.text; if(msg.imgUrl) html+=`<br><img class="chat-image" src="${msg.imgUrl}">`; html+=`</p>`; chatDiv.innerHTML+=html; }); chatDiv.scrollTop=chatDiv.scrollHeight; }); }
 
 resetBtn.onclick=()=>{ const code=prompt("Enter admin code to reset chat:"); if(code===SECRET_CODE){ if(confirm("Are you sure?")) remove(ref(db,'messages')); } else alert("Wrong code!"); };
