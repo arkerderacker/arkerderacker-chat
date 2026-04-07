@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Arkerderacker Chat - Pictures & Settings</title>
+<title>Arkerderacker Chat</title>
 <style>
 body {
   margin: 0;
@@ -48,7 +48,9 @@ input {
   font-size: 16px;
   text-align: left;
   backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
 }
+input:focus { width: 100%; }
 .button-row { display:flex; gap:10px; justify-content:center; width:100%; }
 .glass-btn {
   position: relative;
@@ -102,38 +104,18 @@ input {
   100% { transform: translate(-50%, -50%) scale(1.5); opacity:0; }
 }
 #loginForm { transform: translateY(-30px); }
-#chatUI {
-  display: none;
-  flex-direction: column;
-  gap: 15px;
-  width: 90%;
-  max-width: 600px;
-}
+#chatUI { display: none; flex-direction: column; gap: 15px; width: 90%; max-width: 600px; }
 #onlineBox { background: rgba(255,255,255,0.15); backdrop-filter: blur(15px); border-radius: 15px; padding: 10px; color: #fff; }
 #chat { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); border-radius: 15px; padding: 10px; height: 300px; overflow-y: scroll; color: #fff; }
-.chat-buttons { display:flex; gap:10px; margin-top:5px; flex-wrap: wrap; position: relative; }
-#message { flex:1; padding-right:40px; }
-#message-container { position:relative; width:100%; display:flex; align-items:center; }
-#cameraBtn { position:absolute; right:10px; background:none; border:none; color:#fff; font-size:20px; cursor:pointer; }
-#settingsModal {
-  position: absolute;
-  top:50%; left:50%;
-  transform: translate(-50%,-50%);
-  display:none;
-  flex-direction: column;
-  align-items: center;
-  padding:20px;
-  background: rgba(255,255,255,0.2);
-  backdrop-filter: blur(25px);
-  border-radius: 25px;
-  z-index: 10;
-  min-width:300px;
-}
+#message-container { position: relative; width:100%; display:flex; align-items:center; gap:10px; }
+#message { flex:1; padding:12px 12px 12px 40px; border-radius:12px; border:none; outline:none; background: rgba(255,255,255,0.2); color:#fff; font-size:16px; backdrop-filter: blur(5px); transition: all 0.3s ease; }
+#cameraBtn { position:absolute; left:10px; top:50%; transform: translateY(-50%); background:none; border:none; color:#fff; font-size:20px; cursor:pointer; z-index:2; }
+#settingsModal { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:none; flex-direction:column; align-items:center; padding:20px; background: rgba(255,255,255,0.2); backdrop-filter: blur(25px); border-radius:25px; z-index:10; min-width:300px; }
 #settingsModal input[type=range]{ width:80%; }
 #settingsModal button{ margin-top:10px; }
-#settingsModal .edit-about { display:none; }
-#aboutText { white-space: pre-line; text-align:center; margin-top:10px; }
-img.chat-image { max-width:100%; border-radius:15px; margin:5px 0; }
+#settingsModal .edit-about{ display:none; }
+#aboutText{ white-space: pre-line; text-align:center; margin-top:10px; }
+img.chat-image{ max-width:100%; border-radius:15px; margin:5px 0; }
 </style>
 </head>
 <body>
@@ -219,76 +201,37 @@ let particlesEnabled=true;
 let particleSpeed=1;
 let currentAbout="Arkerderacker Chat\nVersion 1.0\n© 2026";
 
-// --- Remember User ---
 const savedUser=localStorage.getItem("currentUser");
 if(savedUser){ currentUser=savedUser; loginForm.style.display="none"; chatUI.style.display="flex"; userInfo.textContent=`Logged in as: ${currentUser}`; setOnline(); loadChat(); loadOnlineUsers(); if(currentUser==="Markus") editAboutBtn.style.display="block"; }
 
-// --- Ripple Effect ---
 document.querySelectorAll(".glass-btn").forEach(btn=>btn.addEventListener("click",()=>{ const ripple=document.createElement("span"); ripple.classList.add("water"); btn.appendChild(ripple); ripple.addEventListener("animationend",()=>ripple.remove()); }));
 
-// --- Register/Login ---
-registerBtn.onclick=async()=>{
-  const username=usernameInput.value.trim(); const password=passwordInput.value.trim();
-  if(!username||!password){ loginMsg.textContent="Enter username and password!"; return; }
-  const userRef=ref(db,'users/'+username); const snapshot=await get(userRef);
-  if(snapshot.exists()){ loginMsg.textContent="Username already taken!"; return; }
-  await set(userRef,{password}); loginMsg.style.color="green"; loginMsg.textContent="Registered!";
-};
-loginBtn.onclick=async()=>{
-  const username=usernameInput.value.trim(); const password=passwordInput.value.trim();
-  if(!username||!password){ loginMsg.textContent="Enter username and password!"; return; }
-  const userRef=ref(db,'users/'+username); const snapshot=await get(userRef);
-  if(!snapshot.exists()){ loginMsg.textContent="Username does not exist!"; return; }
-  if(password!==snapshot.val().password){ loginMsg.textContent="Incorrect password!"; return; }
-  currentUser=username; localStorage.setItem("currentUser",currentUser);
-  loginForm.style.display="none"; chatUI.style.display="flex"; userInfo.textContent=`Logged in as: ${currentUser}`;
-  setOnline(); loadChat(); loadOnlineUsers();
-  if(currentUser==="Markus") editAboutBtn.style.display="block";
-};
+registerBtn.onclick=async()=>{ const username=usernameInput.value.trim(); const password=passwordInput.value.trim(); if(!username||!password){ loginMsg.textContent="Enter username and password!"; return; } const userRef=ref(db,'users/'+username); const snapshot=await get(userRef); if(snapshot.exists()){ loginMsg.textContent="Username already taken!"; return; } await set(userRef,{password}); loginMsg.style.color="green"; loginMsg.textContent="Registered!"; };
+loginBtn.onclick=async()=>{ const username=usernameInput.value.trim(); const password=passwordInput.value.trim(); if(!username||!password){ loginMsg.textContent="Enter username and password!"; return; } const userRef=ref(db,'users/'+username); const snapshot=await get(userRef); if(!snapshot.exists()){ loginMsg.textContent="Username does not exist!"; return; } if(password!==snapshot.val().password){ loginMsg.textContent="Incorrect password!"; return; } currentUser=username; localStorage.setItem("currentUser",currentUser); loginForm.style.display="none"; chatUI.style.display="flex"; userInfo.textContent=`Logged in as: ${currentUser}`; setOnline(); loadChat(); loadOnlineUsers(); if(currentUser==="Markus") editAboutBtn.style.display="block"; };
 
-// --- Online Users ---
 function setOnline(){ const onlineRef=ref(db,'onlineUsers/'+currentUser); set(onlineRef,true); onDisconnect(onlineRef).remove(); }
 function loadOnlineUsers(){ onValue(ref(db,'onlineUsers'),snapshot=>{ onlineList.innerHTML=""; let total=0; snapshot.forEach(child=>{ total++; onlineList.innerHTML+=`<p>🟢 ${child.key}</p>`; }); onlineCount.textContent=total; }); }
 
-// --- Logout ---
 logoutBtn.onclick=()=>{ if(currentUser) remove(ref(db,'onlineUsers/'+currentUser)); currentUser=null; localStorage.removeItem("currentUser"); loginForm.style.display="flex"; chatUI.style.display="none"; };
 
-// --- Chat ---
 sendBtn.onclick=()=>{ sendMessage(messageInput.value.trim()); messageInput.value=""; };
 function sendMessage(text,imgUrl){ if(!currentUser||(!text&&!imgUrl)) return; push(ref(db,'messages'),{sender:currentUser,timestamp:Date.now(),cid:crypto.randomUUID(),text,text,imgUrl,imgUrl}); }
 function loadChat(){ onValue(ref(db,'messages'),snapshot=>{ chatDiv.innerHTML=""; snapshot.forEach(child=>{ const msg=child.val(); const time=new Date(msg.timestamp).toLocaleTimeString(); let html=`<p><strong>${msg.sender}</strong> [${time}]: `; if(msg.text) html+=msg.text; if(msg.imgUrl) html+=`<br><img class="chat-image" src="${msg.imgUrl}">`; html+=`</p>`; chatDiv.innerHTML+=html; }); chatDiv.scrollTop=chatDiv.scrollHeight; }); }
 
-// --- Reset ---
 resetBtn.onclick=()=>{ const code=prompt("Enter admin code to reset chat:"); if(code===SECRET_CODE){ if(confirm("Are you sure?")) remove(ref(db,'messages')); } else alert("Wrong code!"); };
 
-// --- Settings ---
 settingsBtn.onclick=()=>settingsModal.style.display="flex";
 closeSettingsBtn.onclick=()=>settingsModal.style.display="none";
 speedSlider.oninput=()=>particleSpeed=parseFloat(speedSlider.value);
 toggleParticlesBtn.onclick=()=>particlesEnabled=!particlesEnabled;
 
-// --- About inside Settings ---
 const aboutRef = ref(db,'about');
 onValue(aboutRef,snapshot=>{ if(snapshot.exists()) currentAbout=snapshot.val(); aboutText.textContent=currentAbout; });
-editAboutBtn.onclick=async()=>{
-  if(currentUser!=="Markus") return;
-  const text=prompt("Edit About:",currentAbout);
-  if(text){ await set(aboutRef,text); alert("About updated!"); }
-};
+editAboutBtn.onclick=async()=>{ if(currentUser!=="Markus") return; const text=prompt("Edit About:",currentAbout); if(text){ await set(aboutRef,text); alert("About updated!"); } };
 
-// --- Image Upload ---
 cameraBtn.onclick=()=>imageInput.click();
-imageInput.onchange=async(e)=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  const storageRef=sref(storage,'chatImages/'+Date.now()+'_'+file.name);
-  await uploadBytes(storageRef,file);
-  const url=await getDownloadURL(storageRef);
-  sendMessage('',url);
-  imageInput.value="";
-};
+imageInput.onchange=async(e)=>{ const file=e.target.files[0]; if(!file) return; const storageRef=sref(storage,'chatImages/'+Date.now()+'_'+file.name); await uploadBytes(storageRef,file); const url=await getDownloadURL(storageRef); sendMessage('',url); imageInput.value=""; };
 
-// --- Particles ---
 const canvas=document.getElementById("particles"); const ctx=canvas.getContext("2d"); let particles=[];
 function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
 window.addEventListener("resize",resizeCanvas); resizeCanvas();
