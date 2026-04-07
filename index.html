@@ -230,6 +230,7 @@ let currentUser=null;
 const SECRET_CODE="qwertyuiop";
 let particlesEnabled=true;
 let particleSpeed=1;
+let currentAbout="Arkerderacker Chat\nVersion 1.0\n© 2026";
 
 // ---------------- REMEMBER USER ----------------
 const savedUser=localStorage.getItem("currentUser");
@@ -301,9 +302,17 @@ closeSettingsBtn.onclick=()=>settingsModal.style.display="none";
 speedSlider.oninput=()=>particleSpeed=parseFloat(speedSlider.value);
 toggleParticlesBtn.onclick=()=>particlesEnabled=!particlesEnabled;
 
-// ---------------- ABOUT BUTTON ----------------
-aboutBtn.onclick=()=>{ alert("Arkerderacker Chat\nVersion 1.0\n© 2026"); }
-editAboutBtn.onclick=()=>{ const text=prompt("Edit About:"); if(text) alert(`New About: ${text}`); }
+// ---------------- ABOUT & EDIT ----------------
+const aboutRef = ref(db, 'about');
+onValue(aboutRef, snapshot => {
+  if(snapshot.exists()) currentAbout = snapshot.val();
+});
+aboutBtn.onclick = ()=>{ alert(currentAbout); };
+editAboutBtn.onclick = async ()=>{
+  if(currentUser!=="Markus") return;
+  const text = prompt("Edit About:", currentAbout);
+  if(text){ await set(aboutRef,text); alert("About updated!"); }
+};
 
 // ---------------- PARTICLES ----------------
 const canvas=document.getElementById("particles");
@@ -311,10 +320,8 @@ const ctx=canvas.getContext("2d");
 let particles=[];
 function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
 window.addEventListener("resize",resizeCanvas); resizeCanvas();
-
 function createParticles(){ particles=[]; for(let i=0;i<100;i++){ particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:Math.random()*3+1, speed:Math.random()*0.2+0.1}); } }
 createParticles();
-
 function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); if(particlesEnabled){ particles.forEach(p=>{ p.y-=p.speed*particleSpeed; if(p.y<0) p.y=canvas.height; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.fill(); }); } requestAnimationFrame(animate); }
 animate();
 </script>
