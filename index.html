@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Arkerderacker Chat">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <style>
+<style>
 body {
   margin:0;
   height:100vh;
@@ -108,9 +108,19 @@ input:focus{width:100%;}
   100%{transform:translate(-50%,-50%) scale(1.5);opacity:0;}
 }
 #loginForm{transform:translateY(-30px);}
-#chatUI{display:none;flex-direction:column;gap:15px;width:90%;max-width:600px;}
+#chatUI{display:none;flex-direction:column;gap:5px;width:90%;max-width:600px;}
 #onlineBox{background:rgba(255,255,255,0.15);backdrop-filter:blur(15px);border-radius:15px;padding:10px;color:#fff;}
 #chat{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border-radius:15px;padding:10px;height:300px;overflow-y:scroll;color:#fff;}
+#typingIndicatorContainer {
+  height:20px;
+  font-style:italic;
+  font-size:14px;
+  color:#ccc;
+  padding-left:10px;
+  transition: opacity 0.3s;
+  opacity:0;
+}
+#typingIndicatorContainer.show { opacity:1; }
 #message-container{position:relative;width:100%;display:flex;align-items:center;gap:10px;}
 #message{flex:1;padding:12px 12px 12px 60px;border-radius:12px;border:none;outline:none;background:rgba(255,255,255,0.2);color:#fff;font-size:16px;backdrop-filter:blur(5px);transition:all 0.3s ease;}
 #cameraBtn{
@@ -161,6 +171,9 @@ img.chat-image{max-width:100%;border-radius:15px;margin:5px 0;}
   <div id="onlineBox"><strong>Online: <span id="onlineCount">0</span></strong><div id="onlineList"></div></div>
   <div id="userInfo"></div>
   <div id="chat"></div>
+  <div id="typingIndicatorContainer">
+    <span id="typingIndicator"></span>
+  </div>
   <div class="chat-buttons" id="message-container">
     <input id="message" placeholder="Type a message...">
     <button id="cameraBtn">📷</button>
@@ -201,6 +214,8 @@ const loginForm=document.getElementById("loginForm");
 const chatUI=document.getElementById("chatUI");
 const userInfo=document.getElementById("userInfo");
 const chatDiv=document.getElementById("chat");
+const typingIndicatorContainer=document.getElementById("typingIndicatorContainer");
+const typingIndicator=document.getElementById("typingIndicator");
 const messageInput=document.getElementById("message");
 const sendBtn=document.getElementById("sendBtn");
 const logoutBtn=document.getElementById("logoutBtn");
@@ -235,11 +250,11 @@ loginBtn.onclick=async()=>{ const username=usernameInput.value.trim(); const pas
 function setOnline(){ const onlineRef=ref(db,'onlineUsers/'+currentUser); set(onlineRef,true); onDisconnect(onlineRef).remove(); }
 function loadOnlineUsers(){ onValue(ref(db,'onlineUsers'),snapshot=>{ onlineList.innerHTML=""; let total=0; snapshot.forEach(child=>{ total++; onlineList.innerHTML+=`<p>🟢 ${child.key}</p>`; }); onlineCount.textContent=total; }); }
 
-logoutBtn.onclick=()=>{ if(currentUser) remove(ref(db,'onlineUsers/'+currentUser)); currentUser=null; localStorage.removeItem("currentUser"); loginForm.style.display="flex"; chatUI.style.display="none"; };
+logoutBtn.onclick=()=>{ if(currentUser) remove(ref(db,'onlineUsers/'+currentUser)); currentUser=null; localStorage.removeItem("currentUser"); loginForm.style.display="flex"; chatUI.style.display="none"; remove(ref(db,'typing/'+currentUser)); };
 
 function sendMessage(text,imgUrl){ if(!currentUser || (!text && !imgUrl)) return; push(ref(db,'messages'),{sender:currentUser,timestamp:Date.now(),cid:crypto.randomUUID(),text:text||'',imgUrl:imgUrl||''}); }
 
-sendBtn.onclick=()=>{ sendMessage(messageInput.value.trim()); messageInput.value=""; };
+sendBtn.onclick=()=>{ sendMessage(messageInput.value.trim()); messageInput.value=""; remove(ref(db,'typing/'+currentUser)); };
 
 function loadChat(){ onValue(ref(db,'messages'),snapshot=>{ chatDiv.innerHTML=""; snapshot.forEach(child=>{ const msg=child.val(); const time=new Date(msg.timestamp).toLocaleTimeString(); let html=`<p><strong>${msg.sender}</strong> [${time}]: `; if(msg.text) html+=msg.text; if(msg.imgUrl) html+=`<br><img class="chat-image" src="${msg.imgUrl}">`; html+=`</p>`; chatDiv.innerHTML+=html; }); chatDiv.scrollTop=chatDiv.scrollHeight; }); }
 
@@ -257,12 +272,29 @@ editAboutBtn.onclick=async()=>{ if(currentUser!=="Markus") return; const text=pr
 cameraBtn.onclick=()=>imageInput.click();
 imageInput.onchange=async(e)=>{ const file=e.target.files[0]; if(!file) return; const storageRef=sref(storage,'chatImages/'+Date.now()+'_'+file.name); await uploadBytes(storageRef,file); const url=await getDownloadURL(storageRef); sendMessage('',url); imageInput.value=""; };
 
+// WhatsApp-style typing indicator
+let typingTimeout = null;
+messageInput.addEventListener('input', () => {
+  set(ref(db,'typing/'+currentUser), true);
+  if(typingTimeout) clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(()=>remove(ref(db,'typing/'+currentUser)),1500);
+});
+
+onValue(ref(db,'typing'), snapshot => {
+  const typingUsers=[];
+  snapshot.forEach(child => {
+    if(child.key !== currentUser && child.val()===true) typingUsers.push(child.key);
+  });
+  if(typingUsers.length===0){ typingIndicatorContainer.classList.remove('show'); typingIndicator.textContent=''; }
+  else { typingIndicatorContainer.classList.add('show'); typingIndicator.textContent = typingUsers.length===1 ? `${typingUsers[0]} is typing...` : `${typingUsers.join(', ')} are typing...`; }
+});
+
 const canvas=document.getElementById("particles"); const ctx=canvas.getContext("2d"); let particles=[];
 function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
 window.addEventListener("resize",resizeCanvas); resizeCanvas();
 function createParticles(){ particles=[]; for(let i=0;i<100;i++){ particles.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:Math.random()*3+1, speed:Math.random()*0.2+0.1}); } }
 createParticles();
-function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); if(particlesEnabled){ particles.forEach(p=>{ p.y-=p.speed*particleSpeed; if(p.y<0) p.y=canvas.height; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.fill(); }); } requestAnimationFrame(animate); }
+function animate(){ ctx.clearRect(0,0,canvas.width,canvas.height); if(particlesEnabled){ particles.forEach(p=>{ p.y-=p.speed*particleSpeed; if(p.y<0)p.y=canvas.height; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fillStyle="rgba(255,255,255,0.4)"; ctx.fill(); }); } requestAnimationFrame(animate); }
 animate();
 </script>
 </body>
